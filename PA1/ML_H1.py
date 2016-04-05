@@ -11,6 +11,9 @@ ROW = 0
 data_file = pd.read_csv(FILENAME)
 
 def obtain_statistics(data_file):
+	'''
+	Obtain basic statistics for data 
+	'''
 	median = data_file.median(ROW)
 	mean = data_file.mean(ROW)
 	mode = data_file.mode(ROW)
@@ -20,16 +23,37 @@ def obtain_statistics(data_file):
 		missing_values = len(data_file[variable][data_file[variable].isnull()])
 		missing_values_list.append((variable,missing_values))
 
-	return median, mean, mode, sd, missing_values_list
+	final = pd.concat([median,mean,sd],axis=1)
+
+	return final, mode, missing_values_list
 
 
 def plot_histograms(data_file):
+	'''
+	Obtain plots  
+	'''
 	histograms= data_file.hist(figsize=(15, 10))
 	for i,graph in enumerate(histograms):
 		plt.savefig("graph"+str(i)+".png", bbox_inches = "tight")
+		plt.close()
+
+	data_file.groupby("State")["ID"].count().sort_values().plot(kind = "bar")
+	plt.savefig("state_histogram.png", bbox_inches = "tight")
+	plt.close()
+
+	data_file.groupby("Gender")["ID"].count().sort_values().plot(kind = "bar")
+	plt.savefig("gender_histogram.png", bbox_inches = "tight")
+	plt.close()
+
+	data_file.groupby("Graduated")["ID"].count().sort_values().plot(kind = "bar")
+	plt.savefig("graduated_histogram.png", bbox_inches = "tight")
+	plt.close()
 	
 
 def predict_gender(data_file):
+	'''
+	Predict gender based on genderize API and replace data file
+	'''
 	missing_names = data_file[data_file["Gender"].isnull()]
 	gender_list = []
 	for row in missing_names.iterrows():
@@ -42,12 +66,11 @@ def predict_gender(data_file):
 	final_data = pd.concat([missing_names,data_file[~data_file["Gender"].isnull()]],axis=0)
 	final_data.to_csv("names_predictions.csv",header = True)
 
-def obtain_group_mean(group,variable):
-	group[variable] = group.Age.mean()
-
-	return group
 
 def fill_missing_values(data_file, method):
+	'''
+	Replace missing values with different models 
+	'''
 	if method == "A":
 		data_file = data_file.fillna(data_file.mean())
 
@@ -75,17 +98,12 @@ def fill_missing_values(data_file, method):
 new_data_file = pd.read_csv("names_predictions.csv")
 
 def generate_files(new_data_file):
-	treated_data = fill_missing_values(data_file,"A")
+	treated_data = fill_missing_values(new_data_file,"A")
 	treated_data.to_csv("Model_A.csv",header = True)
-	treated_data = fill_missing_values(data_file,"B")
+	treated_data = fill_missing_values(new_data_file,"B")
 	treated_data.to_csv("Model_B.csv",header = True)
-	treated_data = fill_missing_values(data_file,"C")
+	treated_data = fill_missing_values(new_data_file,"C")
 	treated_data.to_csv("Model_C.csv",header = True)
-
-
-if __name__ == "__main__":
-
-
 
 
 
