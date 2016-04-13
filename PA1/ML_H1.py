@@ -10,6 +10,8 @@ ROW = 0
 
 data_file = pd.read_csv(FILENAME)
 
+criteria = {"DebtRatio":[("less than 50%",0,.5),("less than 100%",5,1),("less than 5 times",1,5),("less than 10 times",5,10),("more than 10 times",10,float("inf"))]}
+
 def obtain_statistics(data_file):
 	'''
 	Obtain basic statistics for data 

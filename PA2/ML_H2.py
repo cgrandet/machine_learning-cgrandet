@@ -6,6 +6,9 @@ import itertools
 from statsmodels.iolib.smpickle import load_pickle
 from sklearn.metrics import accuracy_score
 from sklearn import linear_model, decomposition, datasets 
+import numpy as np
+import random 
+import json
  
 
 
@@ -114,7 +117,7 @@ def generate_continous_variable(data, variable_list):
 	return data 
 
 
-def build_logistic_classifier(data, y_variable, x_variables):
+def build_logistic_classifier(data, y_variable, x_variables, model_numbers):
 	'''
 	Write a sample function that can discretize a continuous variable 
 	and one function that can take a categorical variable and create 
@@ -126,30 +129,34 @@ def build_logistic_classifier(data, y_variable, x_variables):
 			run_list = list(itertools.combinations(x_variables,i+2))
 			model_list += run_list
 	
-	general_results = np.array([y_variable])
+	model_list = random.sample(model_list,model_numbers)
+	model_list = [list(x) for x in model_list]
+
+	general_results = np.array([str(y_variable)])
 	general_results = np.append(general_results,data[y_variable])
 	general_results = general_results.reshape((-1,1))
 	for i, model_variable in enumerate(model_list):
-		logit = sm.Logit(data[y_variable], model_variable)
+		print(i,model_variable)
+		logit = sm.Logit(data[y_variable], data[model_variable])
 		result = logit.fit()
-		result.save(i+"_results.pickle")
-		header = np.array([model_variable])
-		result_table = np.append(header, result.predict())
-		model_result = np.append(header,result_table)
+		result.save(str(i)+"_results.pickle")
+		header = np.array([str(model_variable)])
+		model_result = np.append(header, result.predict())
 		model_result = model_result.reshape((-1,1))
 		general_results = np.append(general_results,model_result, axis = 1)
 
-
-	np.savetxt("predictions.csv", general_results, delimiter=",")
+	
+	np.savetxt("predictions.csv", general_results, fmt = "%s", delimiter="|")
 
 
 def evaluate_classifier(predictions_file):
-	predictions = read_csv(predictions_file)
+	predictions = pd.read_csv(predictions_file, delimiter = "|" )
 	accuracy_dict = {}
 	for variable in predictions.columns:
-		accuracy_score = accuracy_score(predictions.iloc[:,0],predictions[variable])
-	accuracy_dict[variable] = accuracy_score
+		score = accuracy_score(predictions.iloc[:,0],predictions[variable])
+		accuracy_dict[variable] = score
 
+	json.dumps(accuracy_dict)
 	return accuracy_dict
 
 
