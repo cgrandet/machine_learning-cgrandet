@@ -158,9 +158,7 @@ def replace_with_weighted_mean(data_file, variable_interest, cols):
 
 def replace_kneighbors(data_file, variable, cols):
 	'''
-	For some variables, we cannot infer the missing value and replacing with
-	a conditional mean does not make sense.
-	This function takes a data_fileframe and a variables that matches this criteria 
+	Function takes a data_fileframe and a variables that matches this criteria 
 	as well as a list of columns to calibrate with and uses nearest neighbors 
 	to impute the null values.
 	'''
@@ -212,12 +210,6 @@ def replace_missing_values(data_file,features,method,columns_interest = []):
 
 #FEATURE GENERATION 
 def obtain_log(data_file, column):
-    '''
-    Log the values of a column.
-    Good to use when working with income data_file
-    Returns the name of the new column to include programmatically in list of features
-    '''
-
     log_col = 'log_' + column
     data_file[log_col] = data_file[column].apply(lambda x: np.log(x + 1))
 
@@ -280,13 +272,7 @@ def create_percentiles(data_file, column, percentile):
 #BUILD AND EVALUATE CLASSIFIERS 
 
 def model_loop(models_to_run, data_file, label, n_folds): 
-    '''
-    Given an array of models to run, a dataset, features, a label, and 
-    a number of folds, find the best model and its parameters among all the models and
-    the cross product of parameters using k-fold cross validation.
-    Returns values for the best model and a dictionary of y-predicted values for each
-    model to be used for plotting.
-    '''
+    
     features = list(data_file.columns)
     best_overall_model = None
     best_overall_area_under = 0
@@ -314,7 +300,7 @@ def model_loop(models_to_run, data_file, label, n_folds):
                 clf.fit(train[features], train[label])
                 
                 if hasattr(clf, 'predict_proba'):
-                    y_pred_probs = clf.predict_proba(test[features])[:,1] #second col only for class = 1
+                    y_pred_probs = clf.predict_proba(test[features])[:,1] 
                 else:
                     y_pred_probs = clf.decision_function(test[features])
                 
@@ -363,10 +349,7 @@ def evaluate_model(test_data, label, predicted_values):
 
 
 def plot_precision_recall(y_true, y_prob, model_name, model_params):
-
-    '''
-    Plot a precision recall curve for one model with its y_prob values.
-    '''
+    
     precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_prob)
     precision = precision_curve[:-1]
     recall = recall_curve[:-1]
